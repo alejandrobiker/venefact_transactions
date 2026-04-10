@@ -35,17 +35,19 @@ public class CategoryService {
                 .orElseThrow(NotFoundException::new);
     }
 
-    public Category create(final CategoryDTO categoryDTO) {
+    public CategoryDTO create(final CategoryDTO categoryDTO) {
         final Category category = new Category();
         category.setName(categoryDTO.getName());
-        return categoryRepository.save(category);
+        categoryRepository.save(category);
+        return mapToDTO(category);
     }
 
-    public Category update(final Long id, final CategoryDTO categoryDTO) {
+    public CategoryDTO update(final Long id, final CategoryDTO categoryDTO) {
         final Category category = categoryRepository.findById(id)
                 .orElseThrow(NotFoundException::new);
         category.setName(categoryDTO.getName());
-        return categoryRepository.save(category);
+        categoryRepository.save(category);
+        return mapToDTO(category);
     }
 
     public void delete(final Long id) {

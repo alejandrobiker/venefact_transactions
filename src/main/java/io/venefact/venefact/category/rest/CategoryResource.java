@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.venefact.venefact.category.model.CategoryDTO;
 import io.venefact.venefact.category.service.CategoryService;
+import io.venefact.venefact.util.ResponseAPI;
 import jakarta.validation.Valid;
 import java.util.List;
 
@@ -40,24 +41,23 @@ public class CategoryResource {
     }
 
     @PostMapping
-    @ApiResponse(responseCode = "201")
-    public ResponseEntity<String> createCategory(@RequestBody @Valid final CategoryDTO categoryDTO) {
-        categoryService.create(categoryDTO);
-        return new ResponseEntity<>("Categoria creada exitosamente", HttpStatus.CREATED);
+    public ResponseEntity<ResponseAPI<CategoryDTO>> createCategory(@RequestBody @Valid final CategoryDTO categoryDTO) {
+        CategoryDTO categoryCreated = categoryService.create(categoryDTO);
+        return new ResponseEntity<>(new ResponseAPI<>("Categoría creada", categoryCreated), HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<String> updateCategory(@PathVariable(name = "id") final Long id,
+    public ResponseEntity<ResponseAPI<CategoryDTO>> updateCategory(@PathVariable(name = "id") final Long id,
             @RequestBody @Valid final CategoryDTO categoryDTO) {
-        categoryService.update(id, categoryDTO);
-        return ResponseEntity.ok("Categoria actualizada exitosamente");
+        CategoryDTO categoryUpdated = categoryService.update(id, categoryDTO);
+        return new ResponseEntity<>(new ResponseAPI<>("Categoría actualizada", categoryUpdated), HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}")
     @ApiResponse(responseCode = "204")
-    public ResponseEntity<String> deleteCategory(@PathVariable(name = "id") final Long id) {
+    public ResponseEntity<ResponseAPI<Boolean>> deleteCategory(@PathVariable(name = "id") final Long id) {
         categoryService.delete(id);
-        return ResponseEntity.ok("Categoria eliminada exitosamente");
+        return new ResponseEntity<>(new ResponseAPI<>("Categoría eliminada", true), HttpStatus.OK);
     }
 
 }

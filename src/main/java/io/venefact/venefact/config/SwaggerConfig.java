@@ -21,6 +21,9 @@ public class SwaggerConfig {
     @Bean
     public OpenAPI openApiSpec() {
         return new OpenAPI().components(new Components()
+                .addSchemas("ResponseAPI", new ObjectSchema()
+                        .addProperty("message", new StringSchema())
+                        .addProperty("data", new ObjectSchema()))
                 .addSchemas("ApiErrorResponse", new ObjectSchema()
                         .addProperty("status", new IntegerSchema())
                         .addProperty("code", new StringSchema())
@@ -37,12 +40,19 @@ public class SwaggerConfig {
 
     @Bean
     public OperationCustomizer operationCustomizer() {
-        // add error type to each operation
         return (operation, handlerMethod) -> {
+            // Documentación automática para éxitos
+            operation.getResponses().addApiResponse("200/201", new ApiResponse()
+                    .description("Operación exitosa")
+                    .content(new Content().addMediaType("application/json", new MediaType().schema(
+                            new Schema<MediaType>().$ref("ResponseAPI")))));
+
+            // Documentación automática para errores
             operation.getResponses().addApiResponse("4xx/5xx", new ApiResponse()
                     .description("Error")
                     .content(new Content().addMediaType("*/*", new MediaType().schema(
                             new Schema<MediaType>().$ref("ApiErrorResponse")))));
+
             return operation;
         };
     }

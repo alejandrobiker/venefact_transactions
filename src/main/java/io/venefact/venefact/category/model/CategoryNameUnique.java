@@ -15,6 +15,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.servlet.HandlerMapping;
 
 
@@ -37,14 +39,11 @@ public @interface CategoryNameUnique {
 
     class CategoryNameUniqueValidator implements ConstraintValidator<CategoryNameUnique, String> {
 
-        private final CategoryService categoryService;
-        private final HttpServletRequest request;
+        @Autowired
+        private CategoryService categoryService;
 
-        public CategoryNameUniqueValidator(final CategoryService categoryService,
-                final HttpServletRequest request) {
-            this.categoryService = categoryService;
-            this.request = request;
-        }
+        @Autowired
+        private HttpServletRequest request;
 
         @Override
         public boolean isValid(final String value, final ConstraintValidatorContext cvContext) {
@@ -55,7 +54,7 @@ public @interface CategoryNameUnique {
             @SuppressWarnings("unchecked") final Map<String, String> pathVariables =
                     ((Map<String, String>)request.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE));
             final String currentId = pathVariables.get("id");
-            if (currentId != null && value.equalsIgnoreCase(categoryService.get(Long.parseLong(currentId)).getName())) {
+            if (currentId != null && value.equalsIgnoreCase(categoryService.getById(Long.parseLong(currentId)).getName())) {
                 // value hasn't changed
                 return true;
             }

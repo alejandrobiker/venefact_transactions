@@ -6,6 +6,8 @@ import io.venefact.venefact.category.repos.CategoryRepository;
 import io.venefact.venefact.events.BeforeDeleteCategory;
 import io.venefact.venefact.util.NotFoundException;
 import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -14,39 +16,36 @@ import org.springframework.stereotype.Service;
 @Service
 public class CategoryService {
 
-    private final CategoryRepository categoryRepository;
-    private final ApplicationEventPublisher publisher;
+    @Autowired
+    private CategoryRepository categoryRepository;
 
-    public CategoryService(final CategoryRepository categoryRepository,
-            final ApplicationEventPublisher publisher) {
-        this.categoryRepository = categoryRepository;
-        this.publisher = publisher;
-    }
+    @Autowired
+    private ApplicationEventPublisher publisher;
 
     public List<CategoryDTO> findAll() {
-        final List<Category> categories = categoryRepository.findAll(Sort.by("id"));
+        final List<Category> categories = categoryRepository.findAll(Sort.by("id").ascending());
         return categories.stream()
-                .map(category -> mapToDTO(category, new CategoryDTO()))
+                .map(this::mapToDTO)
                 .toList();
     }
 
-    public CategoryDTO get(final Long id) {
+    public CategoryDTO getById(final Long id) {
         return categoryRepository.findById(id)
-                .map(category -> mapToDTO(category, new CategoryDTO()))
+                .map(this::mapToDTO)
                 .orElseThrow(NotFoundException::new);
     }
 
-    public Long create(final CategoryDTO categoryDTO) {
+    public Category create(final CategoryDTO categoryDTO) {
         final Category category = new Category();
-        mapToEntity(categoryDTO, category);
-        return categoryRepository.save(category).getId();
+        category.setName(categoryDTO.getName());
+        return categoryRepository.save(category);
     }
 
-    public void update(final Long id, final CategoryDTO categoryDTO) {
+    public Category update(final Long id, final CategoryDTO categoryDTO) {
         final Category category = categoryRepository.findById(id)
                 .orElseThrow(NotFoundException::new);
-        mapToEntity(categoryDTO, category);
-        categoryRepository.save(category);
+        category.setName(categoryDTO.getName());
+        return categoryRepository.save(category);
     }
 
     public void delete(final Long id) {
@@ -56,15 +55,11 @@ public class CategoryService {
         categoryRepository.delete(category);
     }
 
-    private CategoryDTO mapToDTO(final Category category, final CategoryDTO categoryDTO) {
+    private CategoryDTO mapToDTO(final Category category) {
+        CategoryDTO categoryDTO = new CategoryDTO();
         categoryDTO.setId(category.getId());
         categoryDTO.setName(category.getName());
         return categoryDTO;
-    }
-
-    private Category mapToEntity(final CategoryDTO categoryDTO, final Category category) {
-        category.setName(categoryDTO.getName());
-        return category;
     }
 
     public boolean nameExists(final String name) {

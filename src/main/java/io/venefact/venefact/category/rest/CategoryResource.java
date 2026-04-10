@@ -1,10 +1,13 @@
 package io.venefact.venefact.category.rest;
 
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import io.venefact.venefact.category.model.CategoryDTO;
 import io.venefact.venefact.category.service.CategoryService;
 import jakarta.validation.Valid;
 import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -20,13 +23,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping(value = "/api/categories", produces = MediaType.APPLICATION_JSON_VALUE)
+@Tag(name = "Categoria", description = "")
 public class CategoryResource {
 
-    private final CategoryService categoryService;
-
-    public CategoryResource(final CategoryService categoryService) {
-        this.categoryService = categoryService;
-    }
+    @Autowired
+    private CategoryService categoryService;
 
     @GetMapping
     public ResponseEntity<List<CategoryDTO>> getAllCategories() {
@@ -35,28 +36,28 @@ public class CategoryResource {
 
     @GetMapping("/{id}")
     public ResponseEntity<CategoryDTO> getCategory(@PathVariable(name = "id") final Long id) {
-        return ResponseEntity.ok(categoryService.get(id));
+        return ResponseEntity.ok(categoryService.getById(id));
     }
 
     @PostMapping
     @ApiResponse(responseCode = "201")
-    public ResponseEntity<Long> createCategory(@RequestBody @Valid final CategoryDTO categoryDTO) {
-        final Long createdId = categoryService.create(categoryDTO);
-        return new ResponseEntity<>(createdId, HttpStatus.CREATED);
+    public ResponseEntity<String> createCategory(@RequestBody @Valid final CategoryDTO categoryDTO) {
+        categoryService.create(categoryDTO);
+        return new ResponseEntity<>("Categoria creada exitosamente", HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Long> updateCategory(@PathVariable(name = "id") final Long id,
+    public ResponseEntity<String> updateCategory(@PathVariable(name = "id") final Long id,
             @RequestBody @Valid final CategoryDTO categoryDTO) {
         categoryService.update(id, categoryDTO);
-        return ResponseEntity.ok(id);
+        return ResponseEntity.ok("Categoria actualizada exitosamente");
     }
 
     @DeleteMapping("/{id}")
     @ApiResponse(responseCode = "204")
-    public ResponseEntity<Void> deleteCategory(@PathVariable(name = "id") final Long id) {
+    public ResponseEntity<String> deleteCategory(@PathVariable(name = "id") final Long id) {
         categoryService.delete(id);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok("Categoria eliminada exitosamente");
     }
 
 }

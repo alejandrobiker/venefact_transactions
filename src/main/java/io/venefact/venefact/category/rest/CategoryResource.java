@@ -31,13 +31,15 @@ public class CategoryResource {
     private CategoryService categoryService;
 
     @GetMapping
-    public ResponseEntity<List<CategoryDTO>> getAllCategories() {
-        return ResponseEntity.ok(categoryService.findAll());
+    public ResponseEntity<ResponseAPI<List<CategoryDTO>>> getAllCategories() {
+        List<CategoryDTO> categories = categoryService.findAll();
+        return new ResponseEntity<>(new ResponseAPI<>("Lista de categorías", categories), HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<CategoryDTO> getCategory(@PathVariable(name = "id") final Long id) {
-        return ResponseEntity.ok(categoryService.getById(id));
+    public ResponseEntity<ResponseAPI<CategoryDTO>> getCategory(@PathVariable(name = "id") final Long id) {
+        CategoryDTO categoryDTO = categoryService.getById(id);
+        return new ResponseEntity<>(new ResponseAPI<>("Categoría", categoryDTO), HttpStatus.OK);
     }
 
     @PostMapping

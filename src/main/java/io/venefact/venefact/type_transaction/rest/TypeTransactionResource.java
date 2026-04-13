@@ -2,6 +2,7 @@ package io.venefact.venefact.type_transaction.rest;
 
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import io.venefact.venefact.category.model.CategoryDTO;
 import io.venefact.venefact.type_transaction.model.TypeTransactionDTO;
 import io.venefact.venefact.type_transaction.service.TypeTransactionService;
 import io.venefact.venefact.util.ResponseAPI;
@@ -34,14 +35,16 @@ public class TypeTransactionResource {
     private TypeTransactionService typeTransactionService;
 
     @GetMapping
-    public ResponseEntity<List<TypeTransactionDTO>> getAllTypeTransactions() {
-        return ResponseEntity.ok(typeTransactionService.findAll());
+    public ResponseEntity<ResponseAPI<List<TypeTransactionDTO>>> getAllTypeTransactions() {
+        List<TypeTransactionDTO> typeTransactions = typeTransactionService.findAll();
+        return new ResponseEntity<>(new ResponseAPI<>("Lista de tipos de transacciones", typeTransactions), HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<TypeTransactionDTO> getTypeTransaction(
+    public ResponseEntity<ResponseAPI<TypeTransactionDTO>> getTypeTransaction(
             @PathVariable(name = "id") final Long id) {
-        return ResponseEntity.ok(typeTransactionService.getById(id));
+        TypeTransactionDTO tipoTransactionDto = typeTransactionService.getById(id);
+        return new ResponseEntity<>(new ResponseAPI<>("Tipo de transacción", tipoTransactionDto), HttpStatus.OK);
     }
 
     @PostMapping

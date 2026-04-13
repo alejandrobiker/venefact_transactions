@@ -31,13 +31,15 @@ public class TypeRateResource {
     private  TypeRateService typeRateService;
 
     @GetMapping
-    public ResponseEntity<List<TypeRateDTO>> getAllTypeRates() {
-        return ResponseEntity.ok(typeRateService.findAll());
+    public ResponseEntity<ResponseAPI<List<TypeRateDTO>>> getAllTypeRates() {
+        List<TypeRateDTO> typeRates = typeRateService.findAll();
+        return new ResponseEntity<>(new ResponseAPI<>("Lista de tipos de tasas", typeRates), HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<TypeRateDTO> getTypeRate(@PathVariable(name = "id") final Long id) {
-        return ResponseEntity.ok(typeRateService.getById(id));
+    public ResponseEntity<ResponseAPI<TypeRateDTO>> getTypeRate(@PathVariable(name = "id") final Long id) {
+        TypeRateDTO typeRateDTO = typeRateService.getById(id);
+        return new ResponseEntity<>(new ResponseAPI<>("Tipo de tasa", typeRateDTO), HttpStatus.OK);
     }
 
     @PostMapping

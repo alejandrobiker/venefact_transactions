@@ -56,7 +56,7 @@ public @interface TypeTransactionNameUnique {
             @SuppressWarnings("unchecked") final Map<String, String> pathVariables =
                     ((Map<String, String>)request.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE));
             final String currentId = pathVariables.get("id");
-            if (currentId != null && value.equalsIgnoreCase(typeTransactionService.get(Long.parseLong(currentId)).getName())) {
+            if (currentId != null && value.equalsIgnoreCase(typeTransactionService.getById(Long.parseLong(currentId)).getName())) {
                 // value hasn't changed
                 return true;
             }

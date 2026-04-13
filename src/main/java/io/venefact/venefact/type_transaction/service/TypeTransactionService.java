@@ -26,27 +26,29 @@ public class TypeTransactionService {
     public List<TypeTransactionDTO> findAll() {
         final List<TypeTransaction> typeTransactions = typeTransactionRepository.findAll(Sort.by("id"));
         return typeTransactions.stream()
-                .map(typeTransaction -> mapToDTO(typeTransaction, new TypeTransactionDTO()))
+                .map(this::mapToDTO)
                 .toList();
     }
 
-    public TypeTransactionDTO get(final Long id) {
+    public TypeTransactionDTO getById(final Long id) {
         return typeTransactionRepository.findById(id)
-                .map(typeTransaction -> mapToDTO(typeTransaction, new TypeTransactionDTO()))
+                .map(this::mapToDTO)
                 .orElseThrow(NotFoundException::new);
     }
 
-    public Long create(final TypeTransactionDTO typeTransactionDTO) {
+    public TypeTransactionDTO create(final TypeTransactionDTO typeTransactionDTO) {
         final TypeTransaction typeTransaction = new TypeTransaction();
-        mapToEntity(typeTransactionDTO, typeTransaction);
-        return typeTransactionRepository.save(typeTransaction).getId();
+        typeTransaction.setName(typeTransactionDTO.getName());
+        typeTransactionRepository.save(typeTransaction);
+        return mapToDTO(typeTransaction);
     }
 
-    public void update(final Long id, final TypeTransactionDTO typeTransactionDTO) {
+    public TypeTransactionDTO update(final Long id, final TypeTransactionDTO typeTransactionDTO) {
         final TypeTransaction typeTransaction = typeTransactionRepository.findById(id)
                 .orElseThrow(NotFoundException::new);
-        mapToEntity(typeTransactionDTO, typeTransaction);
+        typeTransaction.setName(typeTransactionDTO.getName());
         typeTransactionRepository.save(typeTransaction);
+        return mapToDTO(typeTransaction);
     }
 
     public void delete(final Long id) {
@@ -56,17 +58,11 @@ public class TypeTransactionService {
         typeTransactionRepository.delete(typeTransaction);
     }
 
-    private TypeTransactionDTO mapToDTO(final TypeTransaction typeTransaction,
-            final TypeTransactionDTO typeTransactionDTO) {
+    private TypeTransactionDTO mapToDTO(final TypeTransaction typeTransaction) {
+        TypeTransactionDTO typeTransactionDTO = new TypeTransactionDTO();
         typeTransactionDTO.setId(typeTransaction.getId());
         typeTransactionDTO.setName(typeTransaction.getName());
         return typeTransactionDTO;
-    }
-
-    private TypeTransaction mapToEntity(final TypeTransactionDTO typeTransactionDTO,
-            final TypeTransaction typeTransaction) {
-        typeTransaction.setName(typeTransactionDTO.getName());
-        return typeTransaction;
     }
 
     public boolean nameExists(final String name) {

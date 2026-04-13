@@ -1,10 +1,14 @@
 package io.venefact.venefact.type_rate.rest;
 
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import io.venefact.venefact.type_rate.model.TypeRateDTO;
 import io.venefact.venefact.type_rate.service.TypeRateService;
+import io.venefact.venefact.util.ResponseAPI;
 import jakarta.validation.Valid;
 import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -20,13 +24,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping(value = "/api/typeRates", produces = MediaType.APPLICATION_JSON_VALUE)
+@Tag(name = "Tasa", description = "Tasa de conversión monetaria")
 public class TypeRateResource {
 
-    private final TypeRateService typeRateService;
-
-    public TypeRateResource(final TypeRateService typeRateService) {
-        this.typeRateService = typeRateService;
-    }
+    @Autowired
+    private  TypeRateService typeRateService;
 
     @GetMapping
     public ResponseEntity<List<TypeRateDTO>> getAllTypeRates() {
@@ -35,28 +37,28 @@ public class TypeRateResource {
 
     @GetMapping("/{id}")
     public ResponseEntity<TypeRateDTO> getTypeRate(@PathVariable(name = "id") final Long id) {
-        return ResponseEntity.ok(typeRateService.get(id));
+        return ResponseEntity.ok(typeRateService.getById(id));
     }
 
     @PostMapping
     @ApiResponse(responseCode = "201")
-    public ResponseEntity<Long> createTypeRate(@RequestBody @Valid final TypeRateDTO typeRateDTO) {
-        final Long createdId = typeRateService.create(typeRateDTO);
-        return new ResponseEntity<>(createdId, HttpStatus.CREATED);
+    public ResponseEntity<ResponseAPI<TypeRateDTO>> createTypeRate(@RequestBody @Valid final TypeRateDTO typeRateDTO) {
+        TypeRateDTO typeRateCreated = typeRateService.create(typeRateDTO);
+        return new ResponseEntity<>(new ResponseAPI<>("Tipo de tasa creada", typeRateCreated), HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Long> updateTypeRate(@PathVariable(name = "id") final Long id,
+    public ResponseEntity<ResponseAPI<TypeRateDTO>> updateTypeRate(@PathVariable(name = "id") final Long id,
             @RequestBody @Valid final TypeRateDTO typeRateDTO) {
-        typeRateService.update(id, typeRateDTO);
-        return ResponseEntity.ok(id);
+        TypeRateDTO typeRateUpdate = typeRateService.update(id, typeRateDTO);
+        return new ResponseEntity<>(new ResponseAPI<>("Tipo de tasa actualizada", typeRateUpdate), HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}")
     @ApiResponse(responseCode = "204")
-    public ResponseEntity<Void> deleteTypeRate(@PathVariable(name = "id") final Long id) {
+    public ResponseEntity<ResponseAPI<Boolean>> deleteTypeRate(@PathVariable(name = "id") final Long id) {
         typeRateService.delete(id);
-        return ResponseEntity.noContent().build();
+        return new ResponseEntity<>(new ResponseAPI<>("Tipo de tasa eliminada", true), HttpStatus.OK);
     }
 
 }

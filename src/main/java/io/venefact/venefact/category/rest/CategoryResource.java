@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping(value = "/api/categories", produces = MediaType.APPLICATION_JSON_VALUE)
-@Tag(name = "Categoria", description = "")
+@Tag(name = "Categoria", description = "Se utiliza para agrupar gastos bajo un mismo propósito (ej: Salud, Alimentación, Deudas)")
 public class CategoryResource {
 
     @Autowired

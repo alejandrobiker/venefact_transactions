@@ -49,10 +49,9 @@ public class TransactionResource {
 
     @PostMapping
     @ApiResponse(responseCode = "201")
-    public ResponseEntity<Long> createTransaction(
-            @RequestBody @Valid final TransactionDTO transactionDTO) {
-        final Long createdId = transactionService.create(transactionDTO);
-        return new ResponseEntity<>(createdId, HttpStatus.CREATED);
+    public ResponseEntity<ResponseAPI<TransactionDTO>> createTransaction(@RequestBody @Valid final TransactionDTO transactionDTO) {
+        final TransactionDTO transactionCreated = transactionService.create(transactionDTO);
+        return new ResponseEntity<>(new ResponseAPI<>("Transacción creada", transactionCreated), HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")

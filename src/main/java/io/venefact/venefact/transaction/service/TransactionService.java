@@ -54,10 +54,10 @@ public class TransactionService {
                 .orElseThrow(NotFoundException::new);
     }
 
-    public Long create(final TransactionDTO transactionDTO) {
+    public TransactionDTO create(final TransactionDTO transactionDTO) {
         final Transaction transaction = new Transaction();
-        mapToEntity(transactionDTO, transaction);
-        return transactionRepository.save(transaction).getId();
+        Transaction transactionMap = mapToEntity(transactionDTO, transaction);
+        return mapToDTO(transactionRepository.save(transactionMap));
     }
 
     public void update(final Long id, final TransactionDTO transactionDTO) {
@@ -110,8 +110,7 @@ public class TransactionService {
         return transactionDTO;
     }
 
-    private Transaction mapToEntity(final TransactionDTO transactionDTO,
-            final Transaction transaction) {
+    private Transaction mapToEntity(final TransactionDTO transactionDTO, final Transaction transaction) {
         transaction.setTitle(transactionDTO.getTitle());
         transaction.setDescription(transactionDTO.getDescription());
         transaction.setAmount(transactionDTO.getAmount());

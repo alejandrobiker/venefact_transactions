@@ -1,6 +1,7 @@
 package io.venefact.venefact.transaction.service;
 
 import io.venefact.venefact.category.domain.Category;
+import io.venefact.venefact.category.model.CategoryDTO;
 import io.venefact.venefact.category.repos.CategoryRepository;
 import io.venefact.venefact.events.BeforeDeleteCategory;
 import io.venefact.venefact.events.BeforeDeleteTypeRate;
@@ -9,12 +10,17 @@ import io.venefact.venefact.transaction.domain.Transaction;
 import io.venefact.venefact.transaction.model.TransactionDTO;
 import io.venefact.venefact.transaction.repos.TransactionRepository;
 import io.venefact.venefact.type_rate.domain.TypeRate;
+import io.venefact.venefact.type_rate.model.TypeRateDTO;
 import io.venefact.venefact.type_rate.repos.TypeRateRepository;
 import io.venefact.venefact.type_transaction.domain.TypeTransaction;
+import io.venefact.venefact.type_transaction.model.TypeTransactionDTO;
 import io.venefact.venefact.type_transaction.repos.TypeTransactionRepository;
 import io.venefact.venefact.util.NotFoundException;
 import io.venefact.venefact.util.ReferencedException;
 import java.util.List;
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -23,31 +29,28 @@ import org.springframework.stereotype.Service;
 @Service
 public class TransactionService {
 
-    private final TransactionRepository transactionRepository;
-    private final CategoryRepository categoryRepository;
-    private final TypeTransactionRepository typeTransactionRepository;
-    private final TypeRateRepository typeRateRepository;
+    @Autowired
+    private TransactionRepository transactionRepository;
 
-    public TransactionService(final TransactionRepository transactionRepository,
-            final CategoryRepository categoryRepository,
-            final TypeTransactionRepository typeTransactionRepository,
-            final TypeRateRepository typeRateRepository) {
-        this.transactionRepository = transactionRepository;
-        this.categoryRepository = categoryRepository;
-        this.typeTransactionRepository = typeTransactionRepository;
-        this.typeRateRepository = typeRateRepository;
-    }
+    @Autowired
+    private CategoryRepository categoryRepository;
 
-    public List<TransactionDTO> findAll() {
-        final List<Transaction> transactions = transactionRepository.findAll(Sort.by("id"));
+    @Autowired
+    private TypeTransactionRepository typeTransactionRepository;
+
+    @Autowired
+    private TypeRateRepository typeRateRepository;
+
+    public List<TransactionDTO> findAllTest() {
+        final List<Transaction> transactions = transactionRepository.findAll(Sort.by("id").descending());
         return transactions.stream()
-                .map(transaction -> mapToDTO(transaction, new TransactionDTO()))
+                .map(this::mapToDTO)
                 .toList();
     }
 
-    public TransactionDTO get(final Long id) {
+    public TransactionDTO getById(final Long id) {
         return transactionRepository.findById(id)
-                .map(transaction -> mapToDTO(transaction, new TransactionDTO()))
+                .map(this::mapToDTO)
                 .orElseThrow(NotFoundException::new);
     }
 
@@ -70,16 +73,40 @@ public class TransactionService {
         transactionRepository.delete(transaction);
     }
 
-    private TransactionDTO mapToDTO(final Transaction transaction,
-            final TransactionDTO transactionDTO) {
+    private TransactionDTO mapToDTO(final Transaction transaction) {
+        TransactionDTO transactionDTO = new TransactionDTO();
         transactionDTO.setId(transaction.getId());
         transactionDTO.setTitle(transaction.getTitle());
         transactionDTO.setDescription(transaction.getDescription());
         transactionDTO.setAmount(transaction.getAmount());
         transactionDTO.setDate(transaction.getDate());
-        transactionDTO.setCategoryId(transaction.getCategoryId() == null ? null : transaction.getCategoryId().getId());
-        transactionDTO.setTypeTransactionId(transaction.getTypeTransactionId() == null ? null : transaction.getTypeTransactionId().getId());
-        transactionDTO.setTypeRateId(transaction.getTypeRateId() == null ? null : transaction.getTypeRateId().getId());
+
+        final Optional<Category> category = categoryRepository.findById(transaction.getCategoryId().getId());
+        if (category.isPresent()) {
+            CategoryDTO categoryDTO = new CategoryDTO();
+            categoryDTO.setId(category.get().getId());
+            categoryDTO.setName(category.get().getName());
+            transactionDTO.setCategory(categoryDTO);
+        }
+
+        final Optional<TypeTransaction> typeTransaction = typeTransactionRepository.findById(transaction.getTypeTransactionId().getId());
+        if (typeTransaction.isPresent()) {
+            TypeTransactionDTO typeTransactionDTO = new TypeTransactionDTO();
+            typeTransactionDTO.setId(typeTransaction.get().getId());
+            typeTransactionDTO.setName(typeTransaction.get().getName());
+            transactionDTO.setTypeTransaction(typeTransactionDTO);
+        }
+
+        if (transaction.getTypeRateId() != null) {
+            final Optional<TypeRate> typeRate = typeRateRepository.findById(transaction.getTypeRateId().getId());
+            if (typeRate.isPresent()) {
+                TypeRateDTO typeRateDTO = new TypeRateDTO();
+                typeRateDTO.setId(typeRate.get().getId());
+                typeRateDTO.setName(typeRate.get().getName());
+                transactionDTO.setTypeRate(typeRateDTO);
+            }
+        }
+
         return transactionDTO;
     }
 

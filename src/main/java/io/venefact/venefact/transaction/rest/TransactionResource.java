@@ -1,10 +1,14 @@
 package io.venefact.venefact.transaction.rest;
 
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import io.venefact.venefact.transaction.model.TransactionDTO;
 import io.venefact.venefact.transaction.service.TransactionService;
+import io.venefact.venefact.util.ResponseAPI;
 import jakarta.validation.Valid;
 import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -20,22 +24,27 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping(value = "/api/transactions", produces = MediaType.APPLICATION_JSON_VALUE)
+@Tag(
+    name = "Transacción",
+    description = "Módulo principal para la gestión de movimientos financieros. " +
+        "Permite registrar, actualizar y consultar ingresos y gastos, " +
+        "vinculándolos con categorías específicas y aplicando la tasa de cambio correspondiente."
+)
 public class TransactionResource {
 
-    private final TransactionService transactionService;
+    @Autowired
+    private TransactionService transactionService;
 
-    public TransactionResource(final TransactionService transactionService) {
-        this.transactionService = transactionService;
-    }
-
-    @GetMapping
-    public ResponseEntity<List<TransactionDTO>> getAllTransactions() {
-        return ResponseEntity.ok(transactionService.findAll());
+    @GetMapping()
+    public ResponseEntity<ResponseAPI<List<TransactionDTO>>> getAllTransactionsTest() {
+        List<TransactionDTO> transactions = transactionService.findAllTest();
+        return new ResponseEntity<>(new ResponseAPI<>("Lista de transacciones", transactions), HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<TransactionDTO> getTransaction(@PathVariable(name = "id") final Long id) {
-        return ResponseEntity.ok(transactionService.get(id));
+    public ResponseEntity<ResponseAPI<TransactionDTO>> getTransaction(@PathVariable(name = "id") final Long id) {
+        TransactionDTO transactionDTO = transactionService.getById(id);
+        return new ResponseEntity<>(new ResponseAPI<>("Transacción", transactionDTO), HttpStatus.OK);
     }
 
     @PostMapping
